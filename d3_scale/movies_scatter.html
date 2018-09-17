@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Scatterplot</title>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+</head>
+
+<body>
+
+<big>
+    <h1>Atividade D3_Scale</b> <h1>
+</big>
+
+<h2>Scatterplot - Comparação Bilheteria x Orçamento</h2>
+<div id="chart"></div>
+<script type="text/javascript">
+
+    function render_scatter(dataset) {
+
+    // DEFINIÇÃO DA MARGEM
+    let margin = {top: 50, right: 50, bottom: 50, left: 50};
+    
+    // DEFINIÇÃO w e h como as dimensões internas da área do gráfico (área útil)
+    let w = 1200 - margin.left - margin.right;
+    let h = 600 - margin.top - margin.bottom;
+
+    // Depois um elemento g no svg que vai transladar a origem do gráfico como sendo a origem da área útil do gráfico
+
+    let svg = d3.select("#chart")
+            .append("svg")
+                .attr("width", w + margin.left + margin.right)
+                .attr("height", h + margin.top + margin.bottom)
+            .append("g")
+                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // CONFIGURANDO A ESCALA
+    let xScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, function(d) {
+            return d.Worldwide_Gross_M;
+        })])
+        .range([0,w]);
+
+    let yScale = d3.scaleLinear()
+        .domain([0, d3.max(dataset, function(d) {
+            return d.Budget_M;
+        })])
+        .range([h,0]);
+
+    let xAxis = d3.axisBottom()
+        .scale(xScale)
+        .ticks(15);
+
+    let yAxis = d3.axisLeft()
+        .scale(yScale)
+
+    // Adicionando os elementos círculos
+    svg.selectAll("circle")
+        .data(dataset)
+        .enter()
+        .append("circle")
+        .attr("cx", function(d) {
+            return xScale(d.Worldwide_Gross_M);
+        })
+        .attr("cy", function(d) {
+            return yScale(d.Budget_M);
+        })
+        .attr("r", 5);
+
+    // Adicionando os labels
+    svg.selectAll("text")
+        .data(dataset)
+        .enter()
+        .append("text")
+        .attr("x", function(d){
+            return xScale(d.Worldwide_Gross_M);
+        })
+        .attr("y", function(d){
+            return yScale(d.Budget_M);
+        })
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "11px")
+        .attr("fill", "red")
+        .text(function(d) {
+            return (d.Worldwide_Gross_M > 2000 ? (d.Film) : '');
+        });
+        
+    // Título eixo horizontal
+    svg.append("text")
+        .attr("transform", "translate(" + (w/2) + "," + (h + margin.bottom) + ")")
+        .style("text-anchor", "middle")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "12px")
+        .text("Bilheteria");
+
+    // Título eixo vertical
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x",0 - (h / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", "12px")
+        .text("Orçamento");
+
+    svg.append("g")
+        .attr("transform", "translate(0," + h + ")")
+        .call(xAxis);
+
+    svg.append("g")
+        .call(yAxis);
+
+    }
+
+    d3.json("data/movies.json").then(function(json) {
+        render_scatter(json);
+    });  
+
+</script>
+
+    <h3> Existe alguma correlação entre essas variáveis? </h3>
+    <h4> Observando a dispersão dos dados podemos afirmar que não possui uma correlação entre bilheteria e orçamento, pois filmes com maiores orçamentos não implicou em maiores bilheterias </h4>
+    <h3> Existem outliers? Quais são? </h3>
+    <h4> Sim. O filme do Avatar, como pode ser visto no gráfico. </h4>
+
+</body>
+</html>
