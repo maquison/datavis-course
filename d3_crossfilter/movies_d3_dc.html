@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Atividade D3_Crossfilter</title>
+    <link rel="stylesheet" href="css/dc.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/crossfilter.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="js/dc.min.js"></script>
+
+</head>
+<body>
+      <h1>Atividade D3_Crossfilter</b> <h1>
+
+      <h2>Gráfico - Bilheteria por Ano</h2>
+      <div id="chartbilheteriaano"></div>
+
+      <h2>Gráfico - Bilheteria por Gênero</h2>
+      <div id="chartbilheteriagenero"></div>
+
+    <script type="text/javascript">
+
+        let barChartAno = dc.barChart('#chartbilheteriaano');
+        let barChartGenero = dc.barChart('#chartbilheteriagenero');
+
+        d3.json("data/movies.json").then(function(data){
+            
+            //criando os dois crossfilters
+            let facts = crossfilter(data);
+
+            let date = facts.dimension(function(d){
+                return d.Year;
+            });
+
+            let bilheteriaAnoGroup = date.group().reduceSum(function(d){
+                return d.Worldwide_Gross_M;
+            });
+            let genre = facts.dimension(function(d){
+                return d.Genre;
+            });
+
+            let bilheteriaGeneroGroup = genre.group().reduceSum(function(d){
+                return d.Worldwide_Gross_M;
+            });
+           
+           //Definição do Gráfico Bilheteria por Ano 
+            barChartAno.width(500)
+                      .height(400)
+                      .margins({top: 50, right: 50, bottom: 30, left: 40})
+                      .dimension(date)
+                      .x(d3.scaleBand())
+                      .xUnits(dc.units.ordinal)
+                      .brushOn(false)
+                      .xAxisLabel("Ano")
+                      .yAxisLabel("Bilheteria")
+                      .group(bilheteriaAnoGroup)
+                      .ordinalColors(['steelblue']);
+            
+            //Definição do Gráfico Bilheteria por Gênero
+            barChartGenero.width(700)
+                          .height(400)
+                          .margins({top: 50, right: 50, bottom: 30, left: 40})
+                          .dimension(genre)
+                          .x(d3.scaleBand())
+                          .xUnits(dc.units.ordinal)
+                          .brushOn(false)
+                          .xAxisLabel("Gênero")
+                          .yAxisLabel("Bilheteria")
+                          .group(bilheteriaGeneroGroup)
+                          .ordinalColors(['steelblue']);
+
+          dc.renderAll();
+
+        });
+    </script>           
+</body>
+</html>
